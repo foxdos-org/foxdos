@@ -10,25 +10,59 @@ int21:
 retcode: dw 0
 verify: db 0
 
-get_retcode:; ah=4dh
+; AH = 4dh
+; get return code
+; inputs:
+; none
+; outputs:
+; AH: termination type (0 = normal, 1 = control-C abort, 2 = critical error abort, 3 = terminate and stay resident)
+; AL: return code
+get_retcode:
 	mov ax, [retcode]
-	retf 
+	xor ax, ax
+	mov [retcode], ax
+	retf
 
-get_version:; ah=30h
+; AH = 30h
+; get the DOS version number
+; inputs:
+; none
+; outputs:
+; AL: major version
+; AH: minor version
+get_version:
 	mov ax, 8 ; if it is not zero indexed this indicates windows ME
 	xor bx, bx ; update: what does that comment mean
 	mov cx, bx
 	retf
 
-getverify:; ah=54h
+; AH = 54h
+; get disk verify flag
+; inputs:
+; none
+; outputs:
+; AL: 0 if off, 1 if on
+getverify:
 	mov al, [verify]
 	retf
 
-setverify:; ah=2eh
+; AH = 2eh
+; set disk verify flag
+; inputs:
+; AL: 0 if off, 1 if on
+; outputs:
+; none
+setverify:
 	mov [verify], al
 	retf
 
-getint:; ah=35h
+; AH = 35h
+; get interrupt vector
+; inputs:
+; AL: interrupt number
+; outputs:
+; ES:BX: current interrupt handler
+getint:
 	push ds
 	push di
 	push ax
@@ -44,7 +78,14 @@ getint:; ah=35h
 	pop ds
 	retf
 
-setint:; ah=25h
+; AH = 25h
+; set interrupt vector
+; inputs:
+; AL: interrupt number
+; DS:DX: new interrupt handler
+; outputs:
+; none
+setint:
 	pusha
 	xor ah, ah
 	shl ax, 2
@@ -58,13 +99,19 @@ setint:; ah=25h
 	popa
 	retf
 
-rdcmos:; input in al. TODO handle bcd here to abstractt it from the kernel
+; read from CMOS register
+; inputs:
+; AL: register
+; outputs:
+; AL: value
+; TODO: handle bcd here to abstract it from the kernel
+rdcmos:
 	cli
 	cmp al, 9 ; not rtc register, do not wait. if this function bugs out
 	jg .rd    ; on a century boundary thats not on me. stop using dos
 	xchg al, ah
 .wait:	mov al, 0xA  ; msb specifies if rtc update is in progress
-	out 0x70, al ; TODO https://wiki.osdev.org/CMOS#RTC_Update_In_Progress
+	out 0x70, al ; TODO: https://wiki.osdev.org/CMOS#RTC_Update_In_Progress
 	in al, 0x71
 	shl al, 1
 	jc .wait
@@ -74,7 +121,13 @@ rdcmos:; input in al. TODO handle bcd here to abstractt it from the kernel
 	sti
 	ret
 
-wrcmos:; register in bh, value in bl
+; write to CMOS register
+; inputs:
+; BL: value
+; BH: register
+; outputs:
+; none
+wrcmos:
 	cli
 	push ax
 	mov al, bh
@@ -86,7 +139,15 @@ wrcmos:; register in bh, value in bl
 	sti
 	ret
 
-gettime:; ah=2ch
+; AH = 2ch
+; read system time from the CMOS
+; inputs:
+; none
+; outputs:
+; CH: hours
+; CL: minutes
+; DH: seconds
+gettime:
 	push ax
 	xor dl, dl
 
@@ -109,7 +170,15 @@ gettime:; ah=2ch
 .end:	pop ax
 	retf
 
-settime:; ah=2dh
+; AH = 2dh
+; set system time in the CMOS
+; inputs:
+; CH: hours
+; CL: minutes
+; DH: seconds
+; outputs:
+; none
+settime:
 	push bx
 	mov bl, ch
 	mov bh, 0x4
@@ -123,6 +192,6 @@ settime:; ah=2dh
 	inc bl
 .f:	xor bh, bh
 	call wrcmos
-	xor al, al ; it probably succeeded, its fine. TODO am i missing return codes anywhere else
+	xor al, al ; it probably succeeded, its fine. TODO: am i missing return codes anywhere else
 	pop bx
 	iret
