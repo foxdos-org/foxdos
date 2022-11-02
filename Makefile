@@ -1,7 +1,8 @@
 TARGET = foxdos
 
-FILES = src/int21.s \
-        src/kernel.s
+FILES = config.s \
+		src/int21.s \
+		src/kernel.s
 
 .PHONY: all qemu clean
 all: obj/boot.o obj/kernel.o $(TARGET)
@@ -17,7 +18,7 @@ obj/kernel.o: $(FILES)
 	@mkdir -p obj
 	nasm -I. -Isrc src/kernel.s -o obj/kernel.o
 
-$(TARGET):
+$(TARGET): src/boot.s $(FILES)
 	cat obj/boot.o obj/kernel.o > $(TARGET)
 
 clean:
