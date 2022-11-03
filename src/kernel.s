@@ -1,6 +1,10 @@
 %include "config.s"
 
-kernel_entry: ; MUST be a short jump due to loader config
+kjmp: ; MUST be a short jump due to loader config
+	jmp kernel_entry
+%include "int21.s"
+
+kernel_entry:
 	mov si, hello_string
 	mov bl, 0x70
 	call print_string
@@ -8,5 +12,4 @@ kernel_entry: ; MUST be a short jump due to loader config
 
 hello_string: db "hello world!", 13, 10, '$'
 
-%include "int21.s"
 %include "vga.s"

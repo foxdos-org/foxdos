@@ -1,15 +1,11 @@
 ; print a string to the screen
 ; inputs:
-; DS:SI: pointer to '$'-terminated string
-; BL: attribute
+; 	DS:SI: pointer to '$'-terminated string
+; 	BL: attribute
 ; outputs:
-; none
+; 	none
 print_string:
-	push ax
-	push bx
-	push cx
-	push dx
-	push bp
+	pusha
 	push es
 
 	; get cursor position in DX
@@ -20,27 +16,22 @@ print_string:
 	; calculate string length by iterating over it until we reach '$'
 	; this sucks but we have to do it because the bios expects to be passed the string length directly
 	xor cx, cx
-	push si
+	mov bp, si
+	jmp .start_loop
 .size_loop:
 	inc cx
 	inc si
+.start_loop:
 	cmp byte [si], '$'
 	jnz .size_loop
-	pop si
-	mov bp, si
 
 	; print string and update cursor position
 	mov ax, ds
 	mov es, ax
-	mov ah, 0x13
-	mov al, 0x01
+	mov ax, 0x1301
 	mov bh, 0x00
 	int 0x10
 
 	pop es
-	pop bp
-	pop dx
-	pop cx
-	pop bx
-	pop ax
+	popa
 	ret

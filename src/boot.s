@@ -5,7 +5,7 @@
 [org 0x7C00]
 [bits 16]
 
-mov ax, K_ADDR >> 4
+mov ax, KERNEL_SEG
 push ax ; setup for ds
 mov es, ax
 mov gs, ax
@@ -13,7 +13,7 @@ mov fs, ax
 
 xor cx, cx
 mov ds, cx
-mov word [0x21*4], 2 ; see kernel_entry
+mov word [0x21*4], 2 ; see kjmp in kernel.s
 mov word [0x21*4+2], ax
 
 mov ax, 0x200 | NUMSEG
@@ -34,7 +34,7 @@ push ds
 push ax
 retf
 
-; TODO we have lots of space for init code here
+; TODO filesystem and reserve space for mbr partition table
 
 times 510 - ($-$$) db 0
 dw 0xAA55

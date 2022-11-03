@@ -45,7 +45,13 @@ tmp: dw 0
 retcode: dw 0
 verify: db 0
 
-rdin_echo:; ah=01h
+; AH = 01h
+; read a character from stdin and print it to stdout
+; inputs:
+; 	none
+; outputs:
+; 	AL: character read from stdin
+rdin_echo:
 	push ax
 	mov ah, 8
 	int 0x21
@@ -55,10 +61,10 @@ rdin_echo:; ah=01h
 ; AH = 4dh
 ; get return code
 ; inputs:
-; none
+; 	none
 ; outputs:
-; AH: termination type (0 = normal, 1 = control-C abort, 2 = critical error abort, 3 = terminate and stay resident)
-; AL: return code
+; 	AH: termination type (0 = normal, 1 = control-C abort, 2 = critical error abort, 3 = terminate and stay resident)
+; 	AL: return code
 getret:
 	xor ax, ax
 	xchg [retcode], ax
@@ -67,10 +73,10 @@ getret:
 ; AH = 30h
 ; get the DOS version number
 ; inputs:
-; none
+; 	none
 ; outputs:
-; AL: major version
-; AH: minor version
+; 	AL: major version
+; 	AH: minor version
 getver:
 	mov ax, 8 ; if it is not zero indexed this indicates windows ME
 	xor bx, bx ; update: what does that comment mean
@@ -81,9 +87,9 @@ getver:
 ; AH = 54h
 ; get disk verify flag
 ; inputs:
-; none
+; 	none
 ; outputs:
-; AL: 0 if off, 1 if on
+; 	AL: 0 if off, 1 if on
 getverify:
 	mov al, [verify]
 	ret
@@ -91,9 +97,9 @@ getverify:
 ; AH = 2eh
 ; set disk verify flag
 ; inputs:
-; AL: 0 if off, 1 if on
+; 	AL: 0 if off, 1 if on
 ; outputs:
-; none
+; 	none
 setverify:
 	mov [verify], al
 	ret
@@ -101,9 +107,9 @@ setverify:
 ; AH = 35h
 ; get interrupt vector
 ; inputs:
-; AL: interrupt number
+; 	AL: interrupt number
 ; outputs:
-; ES:BX: current interrupt handler
+; 	ES:BX: current interrupt handler
 getint:
 	push ds
 	push di
@@ -123,29 +129,29 @@ getint:
 ; AH = 25h
 ; set interrupt vector
 ; inputs:
-; AL: interrupt number
-; DS:DX: new interrupt handler
+; 	AL: interrupt number
+; 	DS:DX: new interrupt handler
 ; outputs:
-; none
+; 	none
 setint:
 	pusha
 	xor ah, ah
 	shl ax, 2
 	mov di, ax
 	xor ax, ax
-	push ds
-	mov ds, ax
-	mov word [di], dx
-	mov word [di+2], ds
-	pop ds
+	push es
+	mov es, ax
+	mov word es:[di], dx
+	mov word es:[di+2], ds
+	pop es
 	popa
 	ret
 
 ; read from CMOS register
 ; inputs:
-; AL: register
+; 	AL: register
 ; outputs:
-; AL: value
+; 	AL: value
 ; TODO: handle bcd here to abstract it from the kernel
 rdcmos:
 	cli
@@ -165,10 +171,10 @@ rdcmos:
 
 ; write to CMOS register
 ; inputs:
-; BL: value
-; BH: register
+; 	BL: value
+; 	BH: register
 ; outputs:
-; none
+; 	none
 wrcmos:
 	cli
 	push ax
@@ -184,11 +190,11 @@ wrcmos:
 ; AH = 2ch
 ; read system time from the CMOS
 ; inputs:
-; none
+; 	none
 ; outputs:
-; CH: hours
-; CL: minutes
-; DH: seconds
+; 	CH: hours
+; 	CL: minutes
+; 	DH: seconds
 gettime:
 	push ax
 	xor dl, dl
@@ -215,11 +221,11 @@ gettime:
 ; AH = 2dh
 ; set system time in the CMOS
 ; inputs:
-; CH: hours
-; CL: minutes
-; DH: seconds
+; 	CH: hours
+; 	CL: minutes
+; 	DH: seconds
 ; outputs:
-; none
+; 	none
 settime:
 	push bx
 	mov bl, ch
