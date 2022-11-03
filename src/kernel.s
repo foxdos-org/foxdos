@@ -2,7 +2,7 @@
 
 kjmp: ; MUST be a short jump due to loader config
 	jmp kernel_entry
-%include "int21.s"
+%include "int21/int21.s"
 
 kernel_entry:
 	mov si, hello_string
