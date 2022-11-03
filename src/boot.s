@@ -1,4 +1,4 @@
-; mothdos boot sector. should load kernel into segment 0x50 at 0x00. max size
+; foxdos boot sector. should load kernel into segment 0x50 at 0x00. max size
 ; would be 64k but i doubt a dos needs more than that. stack is placed at
 ; 0x10500. i would suggest changing this to load the kernel into extended
 ; a20-gate memory so as not to overwrite the boot sector with larger kernels

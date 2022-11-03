@@ -2,7 +2,8 @@ TARGET = foxdos
 
 FILES = config.s \
 		src/int21.s \
-		src/kernel.s
+		src/kernel.s \
+		src/vga.s
 
 .PHONY: all qemu clean
 all: obj/boot.o obj/kernel.o $(TARGET)
