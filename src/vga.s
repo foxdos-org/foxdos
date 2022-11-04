@@ -1,3 +1,20 @@
+; print a character to the screen
+; inputs:
+; 	AL: ASCII character
+; outputs:
+; 	none
+print_character:
+	push ax
+	push bx
+
+	mov ah, 0x0E
+	mov bh, 0x00
+	int 0x10
+
+	pop bx
+	pop ax
+	ret
+
 ; print a string to the screen
 ; inputs:
 ; 	DS:SI: pointer to '$'-terminated string
