@@ -22,4 +22,4 @@ $(TARGET): src/boot.s $(FILES)
 	cat obj/boot.o obj/kernel.o > $(TARGET)
 
 clean:
-	rm -rf obj/ $(TARGET)
+	rm -rf obj/ $(TARGET) kernel.map
