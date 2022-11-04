@@ -22,6 +22,10 @@ wrout:
 	; TODO handle ^C and stuff
 	; TODO handle stdout properly
 	push bx
+	cmp dl, 9
+	jnz .print
+	mov dl, ' ' ; "tabs are expanded to blanks"
+.print:
 	mov al, dl
 	mov bl, 0x70
 	call print_character

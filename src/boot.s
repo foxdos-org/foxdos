@@ -13,7 +13,7 @@ mov fs, ax
 
 xor cx, cx
 mov ds, cx
-mov word [0x21*4], 2 ; see kjmp in kernel.s
+mov word [0x21*4], 3 ; see kjmp in kernel.s
 mov word [0x21*4+2], ax
 
 mov ax, 0x200 | NUMSEG

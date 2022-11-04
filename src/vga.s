@@ -52,3 +52,32 @@ print_string:
 	pop es
 	popa
 	ret
+
+; print a u16 to the screen in hex
+; inputs:
+;	BX: value to print
+; outputs:
+;	none
+print_hex:
+	push ax
+	push bx
+	push cx
+	mov cx, 4
+.loop:
+	mov al, bh
+	shr al, 4
+	cmp al, 9
+	jng .num
+	add al, 'A' - 10
+	jmp .eloop
+.num:
+	add al, '0'
+.eloop:
+	call print_character
+	shl bx, 4
+	dec cx
+	jnz .loop
+	pop cx
+	pop bx
+	pop ax
+	ret

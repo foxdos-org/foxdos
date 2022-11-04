@@ -1,22 +1,27 @@
+; TODO: change to use a stack frame instead of global variables for reentrancy
 int21:
-	push ds
-	push cs
-	pop ds
+	push ax
+	mov ax, ds
+	mov cs:[callerds], ax
+	mov ax, cs
+	mov ds, ax
+	pop ax
 
-	; this probably works
-	mov word [tmp], bx ; cannot use stack for this
+	mov word [tmp], bx
 	movzx bx, ah
 	shl bx, 1
 	add bx, fn
 	mov bx, word [bx]
-	push end21 ; the proper return address
-	; generated return address. should avoid any issues
-	; with things like prefetch or instruction caches
+	push end21
 	push bx
+
 	mov bx, word [tmp]
 	ret
-
-end21:	pop ds
+end21:
+	push ax
+	mov ax, [callerds]
+	mov ds, ax
+	pop ax
 	iret
 
 nul:	stc
@@ -42,6 +47,7 @@ fn:	dw	nul,	rdin_echo,	wrout,	nul,	nul,	nul,	nul,	nul,	nul,	nul,	nul,	nul,	nul,	
 	dw	nul,	nul,	nul,	nul,	nul,	nul,	nul,	nul,	nul,	nul,	nul,	nul,	nul,	nul,	nul,	nul	; Ex
 	dw	nul,	nul,	nul,	nul,	nul,	nul,	nul,	nul,	nul,	nul,	nul,	nul,	nul,	nul,	nul,	nul	; Fx
 
+callerds: dw 0
 tmp: dw 0
 retcode: dw 0
 verify: db 0
