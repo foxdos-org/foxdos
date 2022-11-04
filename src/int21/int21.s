@@ -8,6 +8,7 @@ int21:
 	movzx bx, ah
 	shl bx, 1
 	add bx, fn
+	mov bx, word [bx]
 	push end21 ; the proper return address
 	; generated return address. should avoid any issues
 	; with things like prefetch or instruction caches
