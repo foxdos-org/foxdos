@@ -1,6 +1,6 @@
 ; 0x40 - 0x4F
 
-; AH = 4dh
+; AH = 0x4D
 ; get return code
 ; inputs:
 ; 	none

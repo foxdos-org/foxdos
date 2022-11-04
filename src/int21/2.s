@@ -1,6 +1,6 @@
 ; 0x20 - 0x2F
 
-; AH = 25h
+; AH = 0x25
 ; set interrupt vector
 ; inputs:
 ; 	AL: interrupt number
@@ -21,7 +21,7 @@ setint:
 	popa
 	ret
 
-; AH = 2ch
+; AH = 0x2C
 ; read system time from the CMOS
 ; inputs:
 ; 	none
@@ -52,7 +52,7 @@ gettime:
 .end:	pop ax
 	ret
 
-; AH = 2dh
+; AH = 0x2D
 ; set system time in the CMOS
 ; inputs:
 ; 	CH: hours
@@ -78,7 +78,7 @@ settime:
 	pop bx
 	ret
 
-; AH = 2eh
+; AH = 0x2E
 ; set disk verify flag
 ; inputs:
 ; 	AL: 0 if off, 1 if on

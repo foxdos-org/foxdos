@@ -1,6 +1,6 @@
 ; 0x50 - 0x5F
 
-; AH = 54h
+; AH = 0x54
 ; get disk verify flag
 ; inputs:
 ; 	none

@@ -1,6 +1,6 @@
 ; 0x30 - 0x3F
 
-; AH = 30h
+; AH = 0x30
 ; get the DOS version number
 ; inputs:
 ; 	none
@@ -13,7 +13,7 @@ getver:
 	mov cx, bx
 	ret
 
-; AH = 35h
+; AH = 0x35
 ; get interrupt vector
 ; inputs:
 ; 	AL: interrupt number

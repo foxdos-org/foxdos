@@ -1,6 +1,6 @@
 ; 0x00 - 0x0F
 
-; AH = 01h
+; AH = 0x01
 ; read a character from stdin and print it to stdout
 ; inputs:
 ; 	none
