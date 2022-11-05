@@ -27,7 +27,27 @@ wrout:
 	mov dl, ' ' ; "tabs are expanded to blanks"
 .print:
 	mov al, dl
-	mov bl, 0x70
 	call print_character
 	pop bx
+	ret
+
+; AH = 0x09
+; write string to stdout
+; inputs:
+; 	DS:DX: pointer to '$'-terminated string
+; outputs:
+; 	AL: 0x24 ('$')
+wrout_str:
+	push si
+	mov si, dx
+	jmp .start_loop
+.print_loop:
+	mov dl, byte [si]
+	call wrout
+	inc si
+.start_loop:
+	cmp byte [si], '$'
+	jnz .print_loop
+	mov al, '$'
+	pop si
 	ret

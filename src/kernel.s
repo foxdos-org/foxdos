@@ -7,12 +7,8 @@ kjmp: ; MUST be a jmp due to loader config
 %include "int21/int21.s"
 
 kernel_entry:
-	mov si, hello_string
-	mov bl, 0x70
-	call print_string
-
-	mov ah, 0x2
-	mov dl, '!'
+	mov ah, 0x9
+	mov dx, hello_string
 	int 0x21
 
 	jmp $
