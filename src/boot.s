@@ -37,7 +37,7 @@ retf
 ; TODO filesystem and reserve space for mbr partition table
 
 times 446 - ($-$$) db 0
-times bootpart*16 db 0
+times BOOTPART*16 db 0
 
 ; some programs do not accept values with bits 0-6 set
 status db 0
@@ -58,6 +58,6 @@ end_cyl_low db 0
 ; lba :)
 lba_off dd 0
 lba_len dd 0
-	
+
 times 510 - ($-$$) db 0
 dw 0xAA55
