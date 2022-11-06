@@ -7,6 +7,9 @@ kjmp: ; MUST be a jmp due to loader config
 %include "int21/int21.s"
 
 kernel_entry:
+	mov byte [bootdisk], dl
+	call disk_init
+
 	mov ah, 0x9
 	mov dx, hello_string
 	int 0x21
@@ -15,4 +18,5 @@ kernel_entry:
 
 hello_string: db "hello world!", 13, 10, '$'
 
+%include "disk.s"
 %include "vga.s"
