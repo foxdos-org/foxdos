@@ -1,0 +1,9 @@
+for i in xxd; do which $i || exit; done
+
+CC='cc -O3 -Iinc'
+
+for i in bin2h; do [ ! -f "$i" ] && $CC "$i.c" -o "$i"; done
+
+[ ! -f mkmothfs ] && nasm mfs_hdr.s && \
+			xxd -i mfs_hdr > inc/mfs_hdr.h && \
+			$CC mkmothfs.c

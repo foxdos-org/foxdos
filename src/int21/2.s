@@ -12,6 +12,8 @@ setint:
 	xor ah, ah
 	shl ax, 2
 	mov di, ax
+	mov ax, word [callerds]
+	mov ds, ax
 	xor ax, ax
 	push es
 	mov es, ax

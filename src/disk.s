@@ -32,10 +32,11 @@ read_sector:
 	push bx
 	push es
 .retry:
-	mov es, SECTOR_SEG
+	mov bx, SECTOR_SEG
+	mov es, bx
 	mov bx, SECTOR_ADDR
 	call lba2chs
-	mov ax 0x0201
+	mov ax, 0x0201
 	int 0x13
 	jc .retry
 	pop es
