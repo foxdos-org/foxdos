@@ -6,6 +6,7 @@
 jmp entry
 times 4 - ($-$$) db 0
 
+; 16mb shown as example
 db "MOTHFS",0
 db 0
 sz:	dd 32768	; 32768 * 512 = 16mb disk image
@@ -15,8 +16,19 @@ rsv:	db 127		; 64kb of boot code
 abm:	dd 4096		; 16mb/(512*8)
 
 entry:
-	push cs
+
+	xor ax, ax
+	mov ds, ax
+	mov es, ax
+	mov fs, ax
+	mov gs, ax
+	mov ss, ax
+	mov sp, 0x7BFE	; 30kb stack until 0x500
+	mov bp, sp
+	push ax
 	pop ds
+
+	mov dx, 0x80	; change disk number to 80 because every bios is the worst
 	push dx
 
 	; enable a20 a few different ways

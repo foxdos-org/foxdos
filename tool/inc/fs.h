@@ -1,3 +1,10 @@
+#ifndef MOTHFS_H
+#define MOTHFS_H
+#include <stdint.h>
+
+#define MFS_FILE 0
+#define MFS_DIR 1
+
 typedef struct {
 	uint32_t jmp;		// used to jump past the header
 	uint8_t magic[7];	// 'MOTHFS\0'
@@ -29,19 +36,21 @@ typedef struct {
 	uint8_t type;		// 0 - file
 				// 1 - directory
 
-	uint8_t perms[3];	// unused in foxdos. good for alignment. top bit of
-				// each nibble must be zero
-
-	uint32_t ext;		// undefined in version 0 - contains uid, gid, data
-				// for other file types, long filename, etc
-
-	uint8_t name[8];	// filename
-	uint8_t ext[3];		// extension
-	uint8_t lfn;		// size of long filename - must be zero in version 0
-				// this is on par with most filesystems
-
+	uint8_t pad;		// keep 2-byte alignment
 	uint16_t freebytes;	// number of bytes unused in last sector of file data
-	uint16_t pad;
+
+	uint32_t dir;		// pointer to parent directory
+
+	uint32_t ext;		// undefined in version 0 - contains pointer to uid, gid,
+				// data for other file types, long filename, linux caps,
+				// unix permissions, etc. if missing, must be zero
+
+	// both of these values are zero padded
+	uint8_t name[8];	// filename
+	uint8_t fxt[3];		// extension
+
+	uint8_t lfn;		// size of long filename - should be zero in version 0
+				// max length of 255 is on par with most filesystems
 	
 	uint32_t data[122];
 
@@ -56,3 +65,5 @@ typedef struct {
 	// sector containing 128 more sector offsets. the rules for this are similar
 	// enough to how files work that i do not want to write it out again
 } mothfs_file; // 512 bytes
+
+#endif
