@@ -10,8 +10,6 @@
 
 #define setbit(x, y) x[y >> 3] |= 1 << (y & 7)
 
-#define NUM_MULTICALL 1
-
 typedef struct {
 	char* name;
 	int (*fn)(int, char**);
@@ -37,25 +35,44 @@ char** psplit(char* path, int* i) {
 
 	if(path[strlen(path) - 1] == '/') dir = 1;
 
-	while(1) {
+	while(x) {
 		while(*path == '/') path++;
+		if(!*path) break;
 		l = pstrlen(path, &x);
-		if(l < 3 && *path == '.') {
-			if(path[1] == '.' && *i != 0) free(rpth[*i--]);
-		} else {
-			rpth[*i] = memcpy(malloc(l + 1), path, l);
+		if(*path == '.' && l < 3) {
+			// nop - will not handle case l == 0 or l == 1
+			if(l == 2) {
+				if(path[1] == '.') {
+					if(*i != !!strcmp(rpth[0], "/")) {
+						printf("..: free rpth[%i]\n", *i);
+						free(memcpy(rpth[--(*i)], "\0", 1)); // will not overwrite first element if it is "/" or index oob
+					} else if(strcmp(rpth[0], "/")) {
+						int acc = 0;
+						for(int z = 0; z < *i; z++) {
+							acc += !!strcmp(rpth[z], "..");
+							printf("check rpth[%i]:\t%s\n", z, rpth[z]);
+						}
+						printf("acc = %i\n", acc);
+						if(!acc) goto addent;
+					}
+				} else goto addent;
+			}
+		} else { // insert string
+		addent:	rpth[*i] = memcpy(malloc(l + 1), path, l);
 			rpth[(*i)++][l] = 0;
-			path += l + x; // prevent buffer overrun
 		}
-		if(!x) break;
+		path += l + x; // prevent buffer overrun
 		if(*i >= a) rpth = realloc(rpth, sizeof(char*)*(a += 4));
 	}
+
+	printf("end psplit\n\n");
 
 	if(dir) {
 		if(*i + 1 >= a) rpth = realloc(rpth, sizeof(char*)*(a += 4));
 		rpth[(*i)++] = memcpy(malloc(2), "/", 2);
 	}
-
+	
+	// TODO free a-*i elements from end to avoid leak
 	return rpth;
 }
 
@@ -214,18 +231,22 @@ int mfs_insert(int argc, char** argv) {
 	if(argc < 3) return !!printf("need arguments: [mothfs file] [file to insert]\n");
 }
 
+#define NUM_MULTICALL 2
 multicall mc[NUM_MULTICALL] = {
 	{"new", mfs_new},
-//	{"insert", mfs_insert},
+	{"insert", mfs_insert},
 };
 
 int main(int argc, char** argv) {
 
 	int y;
-	char** x = psplit("//doc/toc////foc//", &y);
+	//char** x = psplit("/pl/../././../p2/p3/..//", &y);
+	//char** x = psplit("/p2/", &y);
+	//char** x = psplit("../../p2///", &y);
+	char** x = psplit("pl/../../././../p2/p3/..//", &y);
 
 	printf("%i\n", y);
-	for(int i = 0; i < y; i++) printf("%s\n", x[i]);
+	for(int i = 0; i < y; i++) printf("%i:\t%s\n", i, x[i]);
 
 	if(argc < 2) err: {
 		printf("valid functions:");
