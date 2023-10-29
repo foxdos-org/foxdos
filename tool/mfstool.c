@@ -40,9 +40,13 @@ char** psplit(char* path, int* i) {
 	while(1) {
 		while(*path == '/') path++;
 		l = pstrlen(path, &x);
-		rpth[*i] = memcpy(malloc(l + 1), path, l);
-		rpth[(*i)++][l] = 0;
-		path += l + x; // prevent buffer overrun
+		if(l < 3 && *path == '.') {
+			if(path[1] == '.' && *i != 0) free(rpth[*i--]);
+		} else {
+			rpth[*i] = memcpy(malloc(l + 1), path, l);
+			rpth[(*i)++][l] = 0;
+			path += l + x; // prevent buffer overrun
+		}
 		if(!x) break;
 		if(*i >= a) rpth = realloc(rpth, sizeof(char*)*(a += 4));
 	}
@@ -86,13 +90,14 @@ uint32_t mfs_traverse(int fd, uint32_t from, char* name) {
 	mothfs_file d, next;
 	int sz;
 	char** rpth = psplit(name, &sz);
+	uint32_t* ns = malloc(512);
 	
 	int i = 0;
 
 	if(!strcmp(*rpth, "/")) {
 		lseek(fd, 0, SEEK_SET);
 		read(fd, &d, 512);
-		mothfs_header* e = &d;
+		mothfs_header* e = (mothfs_header*)&d; // reuse buffer
 		from = e->reserved + e->abm + 1;
 		i++;
 	}
@@ -102,11 +107,11 @@ uint32_t mfs_traverse(int fd, uint32_t from, char* name) {
 		read(fd, &d, 512);
 		switch(d.type) {
 			case 0: // file
-				r = strcmp(rpth[sz - 1], "/") ? from : 0;
-				if(sz - !strcmp(rpth[sz - 1], "/") - 1 != i) r = 0; // TODO does this line even work
+				r = strcmp(rpth[sz - 1], "/") ? from : 0; // fail if last element of path is a /
+				if(sz - !strcmp(rpth[sz - 1], "/") - 1 != i) r = 0; // TODO does this work. fail if the current element is not the last one, excluding a possible "/"
 				goto ret;
 				break;
-			case 1:
+			case 1: // directory
 				uint32_t* sp = d.data + 121;
 				for(int c = 0; c < 121; c++) {
 					if(!d.data[c]) {
@@ -116,12 +121,15 @@ uint32_t mfs_traverse(int fd, uint32_t from, char* name) {
 					lseek(fd, ((uint64_t)d.data[c]) << 9, SEEK_SET);
 					read(fd, &next, 512);
 					if(nmatch(next.name, rpth[i])) {
-						from = d.data[c];
 						// TODO set r if last element
+						if(i == sz - 1 - !strcmp(rpth[sz - 1], "/")) {
+							r = d.data[c];
+							goto ret;
+						}
+						from = d.data[c];
 						break;
 					}
-				} // else check linked sector
-				uint32_t* ns = malloc(512); // TODO ns is never freed
+				} // else check linked sector:
 			cls:	lseek(fd, ((uint64_t)(*sp)) << 9, SEEK_SET);
 				read(fd, ns, 512);
 				for(int c = 0; c < 127; c++) {
@@ -132,11 +140,15 @@ uint32_t mfs_traverse(int fd, uint32_t from, char* name) {
 					lseek(fd, ((uint64_t)d.data[c]) << 9, SEEK_SET);
 					read(fd, &next, 512);
 					if(nmatch(next.name, rpth[i])) {
-						from = d.data[c];
 						// TODO set r if last element
+						if(i == sz - 1 - !strcmp(rpth[sz - 1], "/")) {
+							r = d.data[c];
+							goto ret;
+						}
+						from = d.data[c];
 						break;
 					}
-				} // else go to next linked sector
+				} // else go to next linked sector:
 				sp = ns + 127;
 				goto cls;
 				break;
@@ -145,6 +157,7 @@ uint32_t mfs_traverse(int fd, uint32_t from, char* name) {
 
 ret:	for(; i < sz; i++) free(rpth[i]);
 	free(rpth);
+	free(ns);
 	return r;
 }
 
