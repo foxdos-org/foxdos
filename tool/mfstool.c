@@ -43,6 +43,7 @@ char** psplit(char* path, int* i) {
 			// nop - will not handle case l == 0 or l == 1
 			if(l == 2) {
 				if(path[1] == '.') {
+					printf("handling .. at i == %i\n", *i);
 					if(*i != !!strcmp(rpth[0], "/")) {
 						printf("..: free rpth[%i]\n", *i);
 						free(memcpy(rpth[--(*i)], "\0", 1)); // will not overwrite first element if it is "/" or index oob
@@ -53,7 +54,10 @@ char** psplit(char* path, int* i) {
 							printf("check rpth[%i]:\t%s\n", z, rpth[z]);
 						}
 						printf("acc = %i\n", acc);
-						if(!acc) goto addent;
+						if(!acc) {
+							printf("INSERT ..\n");
+							goto addent;
+						}
 					}
 				} else goto addent;
 			}
@@ -99,6 +103,7 @@ int nmatch(char* s, char* d) {
 			(s[i] & ((s[i] >= 'a' && s[i] <= 'z') ? 0xDF: 0xFF)) != d[i]
 		) return 0;
 	}
+	return 1;
 }
 
 // returns sector of file or directory
@@ -122,6 +127,7 @@ uint32_t mfs_traverse(int fd, uint32_t from, char* name) {
 	for(; i < sz; i++) { // TODO . and ..
 		lseek(fd, ((uint64_t)from) << 9, SEEK_SET);
 		read(fd, &d, 512);
+		uint32_t* sp = d.data + 121;
 		switch(d.type) {
 			case 0: // file
 				r = strcmp(rpth[sz - 1], "/") ? from : 0; // fail if last element of path is a /
@@ -129,7 +135,6 @@ uint32_t mfs_traverse(int fd, uint32_t from, char* name) {
 				goto ret;
 				break;
 			case 1: // directory
-				uint32_t* sp = d.data + 121;
 				for(int c = 0; c < 121; c++) {
 					if(!d.data[c]) {
 						r = 0;
@@ -137,7 +142,7 @@ uint32_t mfs_traverse(int fd, uint32_t from, char* name) {
 					}
 					lseek(fd, ((uint64_t)d.data[c]) << 9, SEEK_SET);
 					read(fd, &next, 512);
-					if(nmatch(next.name, rpth[i])) {
+					if(nmatch((char*)next.name, rpth[i])) {
 						// TODO set r if last element
 						if(i == sz - 1 - !strcmp(rpth[sz - 1], "/")) {
 							r = d.data[c];
@@ -156,7 +161,7 @@ uint32_t mfs_traverse(int fd, uint32_t from, char* name) {
 					}
 					lseek(fd, ((uint64_t)d.data[c]) << 9, SEEK_SET);
 					read(fd, &next, 512);
-					if(nmatch(next.name, rpth[i])) {
+					if(nmatch((char*)next.name, rpth[i])) {
 						// TODO set r if last element
 						if(i == sz - 1 - !strcmp(rpth[sz - 1], "/")) {
 							r = d.data[c];
@@ -225,10 +230,12 @@ int mfs_new(int argc, char** argv) {
 	root.dir = ((uint64_t)lseek(fd, 0, SEEK_CUR)) >> 9;
 
 	write(fd, &root, 512);
+	return 0;
 }
 
 int mfs_insert(int argc, char** argv) {
 	if(argc < 3) return !!printf("need arguments: [mothfs file] [file to insert]\n");
+	return 1;
 }
 
 #define NUM_MULTICALL 2
@@ -242,7 +249,7 @@ int main(int argc, char** argv) {
 	int y;
 	//char** x = psplit("/pl/../././../p2/p3/..//", &y);
 	//char** x = psplit("/p2/", &y);
-	//char** x = psplit("../../p2///", &y);
+	//char** x = psplit("../../p2/", &y);
 	char** x = psplit("pl/../../././../p2/p3/..//", &y);
 
 	printf("%i\n", y);
